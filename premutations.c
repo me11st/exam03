@@ -1,101 +1,103 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-int	ft_strlen(char *s)
+int ft_strlen(char *s)
 {
-	int	len;
-	
-	len = 0;
-	while (*s++)
-		len++;
-	return (len);
+    int len = 0;
+    while (s[len])
+        len++;
+    return len;
 }
 
-void	ft_swap(char *a, char *b)
+int ft_strcmp(char *s1, char *s2)
 {
-	char	tmp = *a;
+    while (*s1 && *s1 == *s2)
+    {
+        s1++;
+        s2++;
+    }
+    return ((unsigned char)*s1 - (unsigned char)*s2);
+}
+
+void ft_strcpy(char *dst, char *src)
+{
+    while (*src)
+        *dst++ = *src++;
+    *dst = '\0';
+}
+
+void ft_swap(char *a, char *b)
+{
+    char tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+void	ft_swap_str(char **a, char **b)
+{
+	char *tmp = *a;
 	*a = *b;
 	*b = tmp;
 }
 
-void	sort(char *s)
+int factorial(int n)
 {
-	int	i;
-	int	j;
-	int	len;
-
-	i = 0;
-	len = ft_strlen(s);
-	while (i < len)
-	{
-		j = 0;
-		while (j < len - i - 1)
-		{
-			if (s[j] > s[j + 1])
-				ft_swap(&s[j], &s[j + 1]);
-			j++;
-		}
-		i++;
-	}	
+    int result = 1;
+    while (n > 1)
+        result *= n--;
+    return result;
 }
 
-// void	premute(char *s, int left, int right)
-// {
-// 	int	i;
-
-// 	if (left == right)
-// 	{
-// 		puts(s);
-// 		return ;
-// 	}
-// 	i = left;
-// 	bool visit[256] = {false};
-// 	while (i <= right)
-// 	{
-// 		if (visit[(unsigned char)s[i]])
-// 			continue;
-// 		visit[(unsigned char)s[i]] = true;
-// 		ft_swap(&s[left], &s[i]);
-// 		premute(s, left + 1, right);
-// 		ft_swap(&s[left], &s[i]);
-// 		i++;
-// 	}
-// }
-void premute(char *s, int left, int right)
+void premute(char *s, int left, int right, char **perms, int *count)
 {
-    int i;
-
     if (left == right)
     {
-        puts(s);
-        return;
+        ft_strcpy(perms[*count], s);
+        (*count)++;
+        return ;
     }
-    i = left;
-    char visit[256] = {0};  // Changed from bool to char, initialized with 0
-    while (i <= right)
+    
+    char visit[256] = {0};
+    for (int i = left; i <= right; i++)
     {
         if (visit[(unsigned char)s[i]])
             continue;
-        visit[(unsigned char)s[i]] = 1;  // Changed from true to 1
+        visit[(unsigned char)s[i]] = 1;
         ft_swap(&s[left], &s[i]);
-        premute(s, left + 1, right);
+        premute(s, left + 1, right, perms, count);
         ft_swap(&s[left], &s[i]);
-        i++;
     }
 }
 
-int	main(int ac, char **av)
+int main(int ac, char **av)
 {
-	char	*s;
-	
-	if (ac != 2)
-	{
-		puts("I need a string\n");
-		return (1);
-	}
-	s = av[1];
-	sort(s);
-	premute(s, 0, ft_strlen(s) - 1);
-	return (0);
+    if (ac != 2)
+    {
+        puts("I need a string\n");
+        return 1;
+    }
+
+    int len = ft_strlen(av[1]);
+    int total = factorial(len);
+    char **perms = malloc(sizeof(char *) * total);
+	if (!perms || !perms[0])
+		return 1; 
+    for (int i = 0; i < total; i++)
+        perms[i] = malloc(sizeof(char) * (len + 1));
+    int count = 0;
+    premute(av[1], 0, len - 1, perms, &count);
+    for (int i = 0; i < total - 1; i++)
+    {
+        for (int j = 0; j < total - i - 1; j++)
+        {
+            if (ft_strcmp(perms[j], perms[j + 1]) > 0)
+				ft_swap_str(&perms[j], &perms[j + 1]);
+        }
+    }
+    for (int i = 0; i < total; i++)
+        puts(perms[i]);
+    for (int i = 0; i < total; i++)
+        free(perms[i]);
+    free(perms);
+    return (0);
 }
